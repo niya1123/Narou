@@ -45,9 +45,12 @@ class narouDownloader():
         小説のタイトルを取得して,フォルダを作る.Parseメソッドで作られた各話をそのフォルダに移動させる.
         """
         with urlopen(self.url) as response:
-            pTag = self.doc.xpath('//p')
+            pTag = self.doc.xpath("//*[@id='novel_color']/p[2]")
         response.close()
-        self.novelTitle = pTag[10].text
+        self.novelTitle = pTag[0].text
+        
+        for c in '\/><|":?* 　':
+            self.novelTitle = self.novelTitle.replace(c,'')
 
         try:
             subprocess.call('mkdir -p ' + self.novelTitle, shell=True)

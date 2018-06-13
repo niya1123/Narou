@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 
 #ダウンロードしたい小説のNコードを入力させてそれをURLにぶっこむ.
 #NコードはなろうのサイトのDLしたい小説のとこに行ってhttps://ncode.syosetu.com/xxxxx/のxxxxxの部分.
-ncode = input("＂ダウンロードしたい小説のNコードを入力してください: ")
+ncode = input("ダウンロードしたい小説のNコードを入力してください: ")
 URL = "https://ncode.syosetu.com" + "/" + ncode + "/"
 
 
