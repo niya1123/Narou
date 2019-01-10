@@ -1,63 +1,60 @@
-#! user/bin/env python3
-# -*- coding: utf-8 -*-
-
 from urllib.request import urlopen
 from lxml.html import fromstring, tostring
-import subprocess, time
+import time
+import os
+
 
 class narouDownloader():
 
-    def __init__(self,ncode):
+    def __init__(self, ncode):
         """
         コンストラクタ.
         """
-        self.encoding = 'utf-8'  #文字コード
-        self.url = 'https://ncode.syosetu.com/'+ncode # 小説のURL
-        self.novelTitle = '' # 小説のタイトル.CreateFolderで中身を指定
+        self.encoding = 'utf-8'  # 文字コード
+        self.url = 'https://ncode.syosetu.com/'+ncode  # 小説のURL
+        self.novelTitle = ''  # 小説のタイトル.CreateFolderで中身を指定
         with urlopen(self.url) as response:
-            #htmlデータ
+            # htmlデータ
             self.doc = fromstring(response.read())
-        response.close() 
 
-    def Parser(self,ncode):
+    def Parser(self, ncode):
         """
         指定URLからhtmlをパースして,欲しい情報を抽出.今回では,小説の各話の題名とその本文を取ってきている.
         """
-        with urlopen(self.url) as response:
-            #変数の名前はhtml内の名前に準拠
-            novel_sublist2 = self.doc.xpath('//dd/a')
-            for i in range(len(novel_sublist2)):
-                count = i + 1
-                novel_subtitle = "第" + str(count) + "話" + novel_sublist2[i].text
-                novel_url = self.url+'/' + str(count)
-                with urlopen(novel_url) as r:
-                    doc2 = fromstring(r.read())
-                    honbun_data = doc2.get_element_by_id('novel_honbun')
-                    honbun = tostring(honbun_data,method='text',encoding=self.encoding)
-                    with open(novel_subtitle + '.txt','wb') as f:
-                        f.write(honbun)
-                    f.close()    
-                r.close()
-        response.close()
+        try:
+            os.makedirs(self.novelTitle)
+            os.chdir(self.novelTitle)
+        except FileExistsError:
+            pass
 
-    def CreateFolder(self):
+        # 変数の名前はhtml内の名前に準拠
+        novel_sublist2 = self.doc.xpath('//dd/a')
+        # for i in range(len(novel_sublist2)):
+        for i, n in enumerate(novel_sublist2):
+            count = i + 1
+            novel_subtitle = "第" + \
+                str(count) + "話" + n.text
+            novel_url = self.url+'/' + str(count)
+            with urlopen(novel_url) as r:
+                doc2 = fromstring(r.read())
+                honbun_data = doc2.get_element_by_id('novel_honbun')
+                honbun = tostring(
+                    honbun_data, method='text', encoding=self.encoding)
+                with open(novel_subtitle + '.txt', 'wb') as f:
+                    f.write(honbun)
+
+    def CreateFolder(self, ncode):
         """
         小説のタイトルを取得して,フォルダを作る.Parseメソッドで作られた各話をそのフォルダに移動させる.
         """
-        with urlopen(self.url) as response:
-            pTag = self.doc.xpath("//*[@id='novel_color']/p[2]")
-        response.close()
+        pTag = self.doc.xpath("//*[@id=\"novel_color\"]/p")
         self.novelTitle = pTag[0].text
-        
-        for c in '\/><|":?* 　':
-            self.novelTitle = self.novelTitle.replace(c,'')
 
-        try:
-            subprocess.call('mkdir -p ' + self.novelTitle, shell=True)
-            subprocess.call('mv *txt ' + self.novelTitle, shell=True)
-        except FileExistsError:
-            pass
-    
+        for c in '><|":?* 　':
+            self.novelTitle = self.novelTitle.replace(c, '')
+
+        self.Parser(ncode)
+
     def showinfo(self):
         """
         ダウンロードの終了を示す.timeはなくてもいい.
@@ -70,6 +67,6 @@ if __name__ == '__main__':
     ncode = input("ダウンロードしたい小説のNコードを入力してください: ")
     dl = narouDownloader(ncode)
     doTime = time.time()
-    dl.Parser(ncode)
-    dl.CreateFolder()
+    # dl.Parser(ncode)
+    dl.CreateFolder(ncode)
     dl.showinfo()
