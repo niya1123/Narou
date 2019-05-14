@@ -21,15 +21,8 @@ class narouDownloader():
         """
         指定URLからhtmlをパースして,欲しい情報を抽出.今回では,小説の各話の題名とその本文を取ってきている.
         """
-        try:
-            os.makedirs(self.novelTitle)
-            os.chdir(self.novelTitle)
-        except FileExistsError:
-            pass
-
         # 変数の名前はhtml内の名前に準拠
         novel_sublist2 = self.doc.xpath('//dd/a')
-        # for i in range(len(novel_sublist2)):
         for i, n in enumerate(novel_sublist2):
             count = i + 1
             novel_subtitle = "第" + \
@@ -42,6 +35,7 @@ class narouDownloader():
                     honbun_data, method='text', encoding=self.encoding)
                 with open(novel_subtitle + '.txt', 'wb') as f:
                     f.write(honbun)
+            print("\r{0}/{1}".format(count, len(novel_sublist2)), end="")
 
     def CreateFolder(self, ncode):
         """
@@ -53,20 +47,27 @@ class narouDownloader():
         for c in '><|":?* 　':
             self.novelTitle = self.novelTitle.replace(c, '')
 
+        try:
+            os.makedirs(self.novelTitle)
+        except FileExistsError:
+            print(self.novelTitle+"はすでに存在しています")
+            print("内容をアップデートします")
+            pass
+
+        # 作業ディレクトリを対象の小説のフォルダーに移動
+        os.chdir(self.novelTitle)
         self.Parser(ncode)
 
     def showinfo(self):
         """
         ダウンロードの終了を示す.timeはなくてもいい.
         """
+        print()
         print(self.novelTitle + " のダウンロードが終了しました.")
-        time.sleep(0.3)
 
 
 if __name__ == '__main__':
     ncode = input("ダウンロードしたい小説のNコードを入力してください: ")
     dl = narouDownloader(ncode)
-    doTime = time.time()
-    # dl.Parser(ncode)
     dl.CreateFolder(ncode)
     dl.showinfo()
