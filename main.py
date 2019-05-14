@@ -28,6 +28,7 @@ class narouDownloader():
             novel_subtitle = "第" + \
                 str(count) + "話" + n.text
             novel_url = self.url+'/' + str(count)
+            time.sleep(1)
             with urlopen(novel_url) as r:
                 doc2 = fromstring(r.read())
                 honbun_data = doc2.get_element_by_id('novel_honbun')
@@ -60,7 +61,7 @@ class narouDownloader():
 
     def showinfo(self):
         """
-        ダウンロードの終了を示す.timeはなくてもいい.
+        ダウンロードの終了を示す.
         """
         print()
         print(self.novelTitle + " のダウンロードが終了しました.")
